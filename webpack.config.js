@@ -24,13 +24,26 @@ module.exports = {
                 use: ['style-loader', 'css-loader'],
             },
             {
-                test: /\.(fbx|png|jpg|gif|svg)$/i,
+                test: /\.(fbx|png|jpe?g|gif|svg)$/i, // Добавлено jpe?g для поддержки .jpg и .jpeg
                 use: [
                     {
                         loader: 'file-loader',
                         options: {
-                            esModule: false, // Добавьте эту строку
-                            outputPath: 'assets',
+                            esModule: false, // Совместимость с Three.js
+                            outputPath: 'assets', // Размещаем изображения в папке 'assets' внутри 'dist'
+                        },
+                    },
+                ],
+            },
+            // Правило для аудиофайлов
+            {
+                test: /\.(mp3|wav|ogg)$/i,
+                use: [
+                    {
+                        loader: 'file-loader',
+                        options: {
+                            esModule: false, // Совместимость с Three.js
+                            outputPath: 'sounds', // Размещаем звуки в папке 'sounds' внутри 'dist'
                         },
                     },
                 ],
