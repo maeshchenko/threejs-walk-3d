@@ -1,5 +1,3 @@
-// src/index.js
-
 // === Импорты ===
 import * as THREE from 'three';
 import { FBXLoader } from 'three/examples/jsm/loaders/FBXLoader.js';
@@ -9,7 +7,7 @@ import './styles.css';
 
 // Импорт моделей персонажа
 import idleURL from './models/character_idle.fbx';
-import walkURL from './models/character_idle.fbx'; // Убедитесь, что путь корректен
+import walkURL from './models/character_idle.fbx';
 import startURL from './models/character_start.fbx';
 import stopURL from './models/character_stop.fbx';
 
@@ -66,6 +64,9 @@ let gameCompleted = false;
 // Переменные для паузы
 let isPaused = false;
 let pauseOverlay;
+
+// Переменные для победы
+let victoryOverlay;
 
 // === Вспомогательные функции ===
 
@@ -205,6 +206,9 @@ const initScene = () => {
 
     // Создание элементов паузы
     createPauseOverlay();
+
+    // Создание элементов победы
+    createVictoryOverlay();
 
     // Добавление обработчиков событий
     addEventListeners();
@@ -484,6 +488,11 @@ const loadCharacter = () => {
             resetTimer();
             startTimer();
             gameCompleted = false;
+
+            // Убедитесь, что победный оверлей скрыт при загрузке персонажа
+            if (victoryOverlay) {
+                victoryOverlay.style.display = 'none';
+            }
         },
         (xhr) => {
             console.log(`${(xhr.loaded / xhr.total * 100).toFixed(2)}% загружено`);
@@ -656,6 +665,11 @@ const restartGame = () => {
     if (isPaused) {
         togglePause();
     }
+
+    // Скрытие оверлея победы, если он отображался
+    if (victoryOverlay) {
+        victoryOverlay.style.display = 'none';
+    }
 };
 
 // Функция переключения режимов камеры
@@ -766,6 +780,7 @@ const playVictorySound = () => {
 const completeGame = () => {
     stopTimer();
     updateBestTime();
+    showVictoryOverlay();
 };
 
 // Функция обновления лучшего времени
@@ -877,10 +892,8 @@ const togglePause = () => {
 // Функция приостановки игры
 const pauseGame = () => {
     console.log('Игра на паузе');
-    // Остановить таймер
-    // В предыдущей реализации таймер обновляется в animate, поэтому нужно просто прекратить его обновление
-    // Также можно приостановить AnimationMixer
-    mixer && mixer.timeScale === 1 && (mixer.timeScale = 0);
+    // Остановить AnimationMixer
+    mixer && (mixer.timeScale = 0);
 
     // Отобразить оверлей паузы
     pauseOverlay.style.display = 'block';
@@ -889,13 +902,38 @@ const pauseGame = () => {
 // Функция возобновления игры
 const resumeGame = () => {
     console.log('Игра возобновлена');
-    // Запустить таймер
-    // В animate таймер будет продолжать обновляться
-    // Восстановить AnimationMixer
-    mixer && mixer.timeScale === 0 && (mixer.timeScale = 1);
+    // Запустить AnimationMixer
+    mixer && (mixer.timeScale = 1);
 
     // Скрыть оверлей паузы
     pauseOverlay.style.display = 'none';
+};
+
+// === Функции управления победой ===
+
+// Функция создания элемента победы
+const createVictoryOverlay = () => {
+    victoryOverlay = document.createElement('div');
+    victoryOverlay.style.position = 'absolute';
+    victoryOverlay.style.top = '50%';
+    victoryOverlay.style.left = '50%';
+    victoryOverlay.style.transform = 'translate(-50%, -50%)';
+    victoryOverlay.style.color = 'white';
+    victoryOverlay.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
+    victoryOverlay.style.padding = '20px';
+    victoryOverlay.style.borderRadius = '10px';
+    victoryOverlay.style.fontFamily = 'Arial, sans-serif';
+    victoryOverlay.style.fontSize = '30px';
+    victoryOverlay.style.zIndex = '200';
+    victoryOverlay.style.display = 'none'; // Скрыт по умолчанию
+    document.body.appendChild(victoryOverlay);
+};
+
+// Функция отображения оверлея победы
+const showVictoryOverlay = () => {
+    const formattedTime = formatTime(elapsedTime);
+    victoryOverlay.textContent = `Победа! Вы прошли лабиринт за ${formattedTime}. Чтобы начать заново - нажми R`;
+    victoryOverlay.style.display = 'block';
 };
 
 // === Функция обновления позиции камеры для режима третьего лица ===
